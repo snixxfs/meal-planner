@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Smart Meal Planner - Login</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css"/>
+  <style>
+    body {
+      background: linear-gradient(135deg, #0f2027, #203a43, #2c5364);
+      height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-family: 'Poppins', sans-serif;
+    }
+    .container {
+      background: rgba(255,255,255,0.1);
+      padding: 40px;
+      border-radius: 20px;
+      backdrop-filter: blur(10px);
+      box-shadow: 0 0 20px rgba(255,255,255,0.2);
+      width: 350px;
+      text-align: center;
+    }
+    .container h2 {
+      margin-bottom: 20px;
+      color: #fff;
+    }
+    input {
+      width: 100%;
+      padding: 12px;
+      margin: 10px 0;
+      border-radius: 10px;
+      border: none;
+      outline: none;
+      background: rgba(255,255,255,0.2);
+      color: #fff;
+      font-size: 16px;
+    }
+    input::placeholder {
+      color: #ccc;
+    }
+    button {
+      width: 100%;
+      padding: 12px;
+      margin-top: 20px;
+      background: #00ffd5;
+      color: #000;
+      font-weight: bold;
+      border: none;
+      border-radius: 10px;
+      cursor: pointer;
+      transition: 0.4s;
+    }
+    button:hover {
+      background: #00ccaa;
+    }
+    .toggle-btn {
+      margin-top: 20px;
+      color: #ccc;
+      cursor: pointer;
+    }
+  </style>
+</head>
+<body>
+
+<div class="container animate__animated animate__fadeIn">
+  <h2 id="form-title">Login</h2>
+  
+  <input type="text" id="username" placeholder="Username" required>
+  <input type="password" id="password" placeholder="Password" required>
+
+  <button onclick="login()">Login</button>
+
+  <div class="toggle-btn" onclick="toggleMode()">Don't have an account? Register</div>
+</div>
+
+<script>
+// Login/Register system
+
+let mode = "login"; // Current mode
+
+function toggleMode() {
+  if (mode === "login") {
+    mode = "register";
+    document.getElementById('form-title').innerText = "Register";
+    document.querySelector('button').innerText = "Register";
+    document.querySelector('.toggle-btn').innerText = "Already have an account? Login";
+  } else {
+    mode = "login";
+    document.getElementById('form-title').innerText = "Login";
+    document.querySelector('button').innerText = "Login";
+    document.querySelector('.toggle-btn').innerText = "Don't have an account? Register";
+  }
+}
+
+function login() {
+  const username = document.getElementById('username').value.trim();
+  const password = document.getElementById('password').value.trim();
+
+  if (username === "" || password === "") {
+    alert("Please fill all fields!");
+    return;
+  }
+
+  let users = JSON.parse(localStorage.getItem('users')) || [];
+
+  if (mode === "register") {
+    // Register Mode
+    const userExists = users.find(user => user.username === username);
+    if (userExists) {
+      alert("Username already exists! Try login.");
+      return;
+    }
+
+    users.push({ username, password });
+    localStorage.setItem('users', JSON.stringify(users));
+    alert("Registration successful! Now Login.");
+
+    // Switch to login mode
+    toggleMode();
+    return;
+  }
+
+  // Login Mode
+  const validUser = users.find(user => user.username === username && user.password === password);
+
+  if (validUser) {
+    localStorage.setItem('currentUser', username);
+    alert("Login Successful! Redirecting...");
+    window.location.href = "dashboard.html"; // Redirect to dashboard
+  } else {
+    alert("Invalid Credentials!");
+  }
+}
+</script>
+
+</body>
+</html>

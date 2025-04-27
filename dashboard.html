@@ -1,0 +1,1630 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard - Smart Meal Planner</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.1.1/css/all.min.css">
+    <style>
+        :root {
+            --primary: #4CAF50;
+            --primary-dark: #388E3C;
+            --primary-light: #C8E6C9;
+            --accent: #FF9800;
+            --light: #F5F5F5;
+            --dark: #333;
+            --error: #F44336;
+            --success: #8BC34A;
+            --sidebar-width: 250px;
+        }
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        
+        body {
+            background-color: #f9f9f9;
+            color: var(--dark);
+            line-height: 1.6;
+            display: flex;
+            min-height: 100vh;
+        }
+        
+        .sidebar {
+            background-color: white;
+            width: var(--sidebar-width);
+            height: 100vh;
+            position: fixed;
+            left: 0;
+            top: 0;
+            box-shadow: 2px 0 10px rgba(0, 0, 0, 0.1);
+            display: flex;
+            flex-direction: column;
+            z-index: 100;
+            transition: transform 0.3s ease;
+        }
+        
+        .sidebar-header {
+            padding: 1.5rem;
+            border-bottom: 1px solid #eee;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+        
+        .logo {
+            display: flex;
+            align-items: center;
+            font-weight: bold;
+            color: var(--primary-dark);
+        }
+        
+        .logo i {
+            font-size: 1.5rem;
+            margin-right: 10px;
+        }
+        
+        .sidebar-nav {
+            padding: 1.5rem 0;
+            flex: 1;
+            overflow-y: auto;
+        }
+        
+        .nav-item {
+            padding: 0.8rem 1.5rem;
+            display: flex;
+            align-items: center;
+            color: var(--dark);
+            text-decoration: none;
+            transition: all 0.3s;
+            position: relative;
+        }
+        
+        .nav-item:hover {
+            background-color: #f5f5f5;
+        }
+        
+        .nav-item.active {
+            background-color: var(--primary-light);
+            color: var(--primary-dark);
+            font-weight: 600;
+        }
+        
+        .nav-item.active::before {
+            content: '';
+            position: absolute;
+            left: 0;
+            top: 0;
+            height: 100%;
+            width: 4px;
+            background-color: var(--primary);
+        }
+        
+        .nav-item i {
+            width: 24px;
+            margin-right: 10px;
+            font-size: 1.1rem;
+        }
+        
+        .user-info {
+            padding: 1.5rem;
+            border-top: 1px solid #eee;
+            display: flex;
+            align-items: center;
+        }
+        
+        .user-avatar {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background-color: var(--primary);
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            margin-right: 10px;
+        }
+        
+        .user-details {
+            flex: 1;
+        }
+        
+        .user-name {
+            font-weight: 600;
+            margin-bottom: 2px;
+        }
+        
+        .user-status {
+            font-size: 0.8rem;
+            color: #888;
+        }
+        
+        .main-content {
+            margin-left: var(--sidebar-width);
+            flex: 1;
+            padding: 2rem;
+            transition: margin-left 0.3s ease;
+        }
+        
+        .top-bar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 2rem;
+        }
+        
+        .mobile-menu {
+            display: none;
+            font-size: 1.5rem;
+            cursor: pointer;
+            background: none;
+            border: none;
+            color: var(--dark);
+        }
+        
+        .search-bar {
+            display: flex;
+            align-items: center;
+            background-color: white;
+            border-radius: 50px;
+            padding: 0.5rem 1rem;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
+            width: 300px;
+        }
+        
+        .search-bar input {
+            border: none;
+            background: none;
+            outline: none;
+            flex: 1;
+            padding: 0.5rem;
+        }
+        
+        .search-bar i {
+            color: #888;
+        }
+        
+        .notifications {
+            position: relative;
+        }
+        
+        .notifications i {
+            font-size: 1.5rem;
+            cursor: pointer;
+        }
+        
+        .notifications-count {
+            position: absolute;
+            top: -5px;
+            right: -5px;
+            background-color: var(--error);
+            color: white;
+            font-size: 0.7rem;
+            width: 18px;
+            height: 18px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 50%;
+            display: none;
+        }
+        
+        .section-title {
+            margin-bottom: 1.5rem;
+            font-size: 1.5rem;
+            color: var(--dark);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+        
+        .btn {
+            display: inline-block;
+            padding: 0.8rem 1.5rem;
+            background-color: var(--accent);
+            color: white;
+            text-decoration: none;
+            border-radius: 4px;
+            font-weight: 600;
+            transition: all 0.3s;
+            border: none;
+            cursor: pointer;
+        }
+        
+        .btn:hover {
+            background-color: #F57C00;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        }
+        
+        .btn-primary {
+            background-color: var(--primary);
+        }
+        
+        .btn-primary:hover {
+            background-color: var(--primary-dark);
+        }
+        
+        .btn-small {
+            padding: 0.5rem 1rem;
+            font-size: 0.9rem;
+        }
+        
+        .btn-outline {
+            background-color: transparent;
+            border: 1px solid var(--primary);
+            color: var(--primary);
+        }
+        
+        .btn-outline:hover {
+            background-color: var(--primary);
+            color: white;
+        }
+        
+        .dashboard-cards {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+        
+        .card {
+            background-color: white;
+            border-radius: 8px;
+            padding: 1.5rem;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+        }
+        
+        .stats-card {
+            display: flex;
+            align-items: center;
+        }
+        
+        .stat-icon {
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            background-color: var(--primary-light);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-right: 1rem;
+        }
+        
+        .stat-icon i {
+            font-size: 1.5rem;
+            color: var(--primary);
+        }
+        
+        .stat-info h3 {
+            font-size: 1.5rem;
+            margin-bottom: 0.2rem;
+        }
+        
+        .stat-info p {
+            color: #888;
+            font-size: 0.9rem;
+        }
+        
+        .meal-plans {
+            margin-bottom: 2rem;
+        }
+        
+        .meal-plan-list {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 1.5rem;
+        }
+        
+        .meal-plan-card {
+            position: relative;
+            overflow: hidden;
+            border-radius: 8px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+            transition: transform 0.3s ease;
+        }
+        
+        .meal-plan-card:hover {
+            transform: translateY(-5px);
+        }
+        
+        .meal-plan-image {
+            height: 180px;
+            background-size: cover;
+            background-position: center;
+        }
+        
+        .meal-plan-details {
+            padding: 1.5rem;
+            background-color: white;
+        }
+        
+        .meal-plan-title {
+            font-size: 1.2rem;
+            margin-bottom: 0.5rem;
+        }
+        
+        .meal-plan-date {
+            color: #888;
+            font-size: 0.9rem;
+            margin-bottom: 1rem;
+        }
+        
+        .meal-plan-stats {
+            display: flex;
+            justify-content: space-between;
+            font-size: 0.9rem;
+        }
+        
+        .meal-plan-stat {
+            display: flex;
+            align-items: center;
+        }
+        
+        .meal-plan-stat i {
+            margin-right: 5px;
+            color: var(--primary);
+        }
+        
+        .calendar-section {
+            margin-bottom: 2rem;
+        }
+        
+        .calendar {
+            background-color: white;
+            border-radius: 8px;
+            padding: 1.5rem;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+        }
+        
+        .calendar-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1.5rem;
+        }
+        
+        .calendar-title {
+            font-size: 1.2rem;
+            font-weight: bold;
+        }
+        
+        .calendar-nav {
+            display: flex;
+        }
+        
+        .calendar-nav button {
+            background: none;
+            border: none;
+            font-size: 1.2rem;
+            cursor: pointer;
+            padding: 0.5rem;
+            color: var(--dark);
+        }
+        
+        .calendar-days {
+            display: grid;
+            grid-template-columns: repeat(7, 1fr);
+            gap: 0.5rem;
+            text-align: center;
+            font-weight: bold;
+            margin-bottom: 0.5rem;
+        }
+        
+        .calendar-grid {
+            display: grid;
+            grid-template-columns: repeat(7, 1fr);
+            gap: 0.5rem;
+        }
+        
+        .calendar-day {
+            aspect-ratio: 1;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            border-radius: 8px;
+            border: 1px solid #eee;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        
+        .calendar-day:hover {
+            background-color: var(--primary-light);
+        }
+        
+        .calendar-day.active {
+            background-color: var(--primary);
+            color: white;
+        }
+        
+        .calendar-day.has-meal {
+            position: relative;
+        }
+        
+        .calendar-day.has-meal::after {
+            content: '';
+            position: absolute;
+            bottom: 5px;
+            width: 6px;
+            height: 6px;
+            border-radius: 50%;
+            background-color: var(--accent);
+        }
+        
+        .recent-activity {
+            background-color: white;
+            border-radius: 8px;
+            padding: 1.5rem;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+        }
+        
+        .activity-list {
+            list-style: none;
+        }
+        
+        .activity-item {
+            display: flex;
+            padding: 1rem 0;
+            border-bottom: 1px solid #eee;
+        }
+        
+        .activity-item:last-child {
+            border-bottom: none;
+        }
+        
+        .activity-icon {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-right: 1rem;
+        }
+        
+        .activity-icon.green {
+            background-color: rgba(76, 175, 80, 0.1);
+            color: var(--primary);
+        }
+        
+        .activity-icon.orange {
+            background-color: rgba(255, 152, 0, 0.1);
+            color: var(--accent);
+        }
+        
+        .activity-icon.blue {
+            background-color: rgba(33, 150, 243, 0.1);
+            color: #2196F3;
+        }
+        
+        .activity-content {
+            flex: 1;
+        }
+        
+        .activity-text {
+            margin-bottom: 0.3rem;
+        }
+        
+        .activity-time {
+            font-size: 0.8rem;
+            color: #888;
+        }
+        
+        .shopping-list-section {
+            margin-bottom: 2rem;
+        }
+        
+        .shopping-list {
+            background-color: white;
+            border-radius: 8px;
+            padding: 1.5rem;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+        }
+        
+        .shopping-list-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1rem;
+        }
+        
+        .shopping-list-title {
+            font-size: 1.2rem;
+            font-weight: bold;
+        }
+        
+        .shopping-items {
+            list-style: none;
+        }
+        
+        .shopping-item {
+            display: flex;
+            align-items: center;
+            padding: 0.8rem 0;
+            border-bottom: 1px solid #eee;
+        }
+        
+        .shopping-item:last-child {
+            border-bottom: none;
+        }
+        
+        .shopping-item-checkbox {
+            margin-right: 10px;
+            width: 20px;
+            height: 20px;
+            border-radius: 4px;
+            border: 2px solid #ddd;
+            display: inline-block;
+            position: relative;
+            cursor: pointer;
+        }
+        
+        .shopping-item.checked .shopping-item-checkbox::after {
+            content: '\f00c';
+            font-family: 'Font Awesome 5 Free';
+            font-weight: 900;
+            font-size: 0.8rem;
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            color: var(--primary);
+        }
+        
+        .shopping-item.checked .shopping-item-text {
+            text-decoration: line-through;
+            color: #888;
+        }
+        
+        .shopping-item-text {
+            flex: 1;
+        }
+        
+        .shopping-item-category {
+            padding: 0.2rem 0.5rem;
+            border-radius: 4px;
+            font-size: 0.8rem;
+            font-weight: 600;
+            background-color: #f1f1f1;
+            color: #666;
+        }
+        
+        .shopping-item-category.produce {
+            background-color: rgba(76, 175, 80, 0.1);
+            color: var(--primary);
+        }
+        
+        .shopping-item-category.dairy {
+            background-color: rgba(33, 150, 243, 0.1);
+            color: #2196F3;
+        }
+        
+        .shopping-item-category.meat {
+            background-color: rgba(244, 67, 54, 0.1);
+            color: var(--error);
+        }
+        
+        .shopping-item-category.pantry {
+            background-color: rgba(255, 152, 0, 0.1);
+            color: var(--accent);
+        }
+        
+        /* Modal Styles */
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: rgba(0, 0, 0, 0.5);
+            display: none;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+        }
+        
+        .modal {
+            background-color: white;
+            border-radius: 8px;
+            width: 90%;
+            max-width: 600px;
+            max-height: 90vh;
+            overflow-y: auto;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
+        }
+        
+        .modal-header {
+            padding: 1.5rem;
+            border-bottom: 1px solid #eee;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .modal-title {
+            font-size: 1.5rem;
+            font-weight: bold;
+        }
+        
+        .modal-close {
+            font-size: 1.5rem;
+            background: none;
+            border: none;
+            cursor: pointer;
+            color: #888;
+        }
+        
+        .modal-body {
+            padding: 1.5rem;
+        }
+        
+        .modal-footer {
+            padding: 1.5rem;
+            border-top: 1px solid #eee;
+            display: flex;
+            justify-content: flex-end;
+            gap: 1rem;
+        }
+        
+        /* Form Styles */
+        .form-group {
+            margin-bottom: 1.5rem;
+        }
+        
+        .form-label {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-weight: 600;
+        }
+        
+        .form-control {
+            width: 100%;
+            padding: 0.8rem;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 1rem;
+        }
+        
+        .form-control:focus {
+            border-color: var(--primary);
+            outline: none;
+            box-shadow: 0 0 0 2px rgba(76, 175, 80, 0.2);
+        }
+        
+        .form-select {
+            width: 100%;
+            padding: 0.8rem;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 1rem;
+            cursor: pointer;
+        }
+        
+        .form-check {
+            display: flex;
+            align-items: center;
+            margin-bottom: 0.5rem;
+        }
+        
+        .form-check-input {
+            margin-right: 0.5rem;
+        }
+        
+        .input-group {
+            display: flex;
+            margin-bottom: 1rem;
+        }
+        
+        .input-group .form-control {
+            flex: 1;
+            border-top-right-radius: 0;
+            border-bottom-right-radius: 0;
+        }
+        
+        .input-group-append {
+            display: flex;
+        }
+        
+        .input-group-text {
+            padding: 0.8rem;
+            background-color: #f5f5f5;
+            border: 1px solid #ddd;
+            border-left: none;
+            border-top-right-radius: 4px;
+            border-bottom-right-radius: 4px;
+        }
+        
+        /* Add item form */
+        .add-item-form {
+            display: flex;
+            margin-top: 1rem;
+        }
+        
+        .add-item-form .form-control {
+            flex: 1;
+            border-top-right-radius: 0;
+            border-bottom-right-radius: 0;
+        }
+        
+        .add-item-form .btn {
+            border-top-left-radius: 0;
+            border-bottom-left-radius: 0;
+        }
+        
+        .meal-day-list {
+            margin-top: 1rem;
+        }
+        
+        .meal-day-item {
+            background-color: #f9f9f9;
+            border-radius: 4px;
+            padding: 1rem;
+            margin-bottom: 1rem;
+        }
+        
+        .meal-day-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 0.5rem;
+        }
+        
+        .meal-day-title {
+            font-weight: 600;
+        }
+        
+        .meal-list {
+            list-style: none;
+        }
+        
+        .meal-item {
+            display: flex;
+            justify-content: space-between;
+            padding: 0.5rem 0;
+            border-bottom: 1px solid #eee;
+        }
+        
+        .meal-item:last-child {
+            border-bottom: none;
+        }
+        
+        .meal-type {
+            font-weight: 600;
+            width: 100px;
+        }
+        
+        .meal-name {
+            flex: 1;
+        }
+        
+        .meal-actions {
+            display: flex;
+            gap: 0.5rem;
+        }
+        
+        .meal-actions button {
+            background: none;
+            border: none;
+            cursor: pointer;
+            font-size: 1rem;
+        }
+        
+        .meal-actions .edit {
+            color: #2196F3;
+        }
+        
+        .meal-actions .delete {
+            color: var(--error);
+        }
+        
+        .empty-state {
+            text-align: center;
+            padding: 2rem;
+            color: #888;
+        }
+        
+        .empty-state i {
+            font-size: 3rem;
+            margin-bottom: 1rem;
+            color: #ddd;
+        }
+        
+        .empty-state p {
+            margin-bottom: 1.5rem;
+        }
+        
+        /* Mobile styles */
+        @media (max-width: 992px) {
+            .main-content {
+                margin-left: 0;
+                padding: 1rem;
+            }
+            
+            .sidebar {
+                transform: translateX(-100%);
+            }
+            
+            .sidebar.active {
+                transform: translateX(0);
+            }
+            
+            .mobile-menu {
+                display: block;
+            }
+        }
+        
+        @media (max-width: 768px) {
+            .dashboard-cards {
+                grid-template-columns: 1fr;
+            }
+            
+            .search-bar {
+                width: 200px;
+            }
+        }
+        
+        @media (max-width: 576px) {
+            .top-bar {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+            
+            .search-bar {
+                width: 100%;
+                margin-top: 1rem;
+            }
+            
+            .calendar-grid {
+                gap: 0.2rem;
+            }
+            
+            .calendar-day {
+                font-size: 0.8rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Sidebar -->
+    <div class="sidebar">
+        <div class="sidebar-header">
+            <div class="logo">
+                <i class="fas fa-utensils"></i>
+                <span>Smart Meal Planner</span>
+            </div>
+        </div>
+        <div class="sidebar-nav">
+            <a href="#" class="nav-item active">
+                <i class="fas fa-home"></i> Dashboard
+            </a>
+           
+        </div>
+        <div class="user-info">
+            <div class="user-avatar" id="user-avatar">--</div>
+            <div class="user-details">
+                <div class="user-name" id="user-name">User Name</div>
+                <div class="user-status" id="user-status">Standard User</div>
+            </div>
+            <!-- Logout Button -->
+            <button id="logout-btn" class="btn btn-small btn-danger">Logout</button>
+        </div>
+    </div>
+    
+    <!-- Main Content -->
+    <div class="main-content">
+        <div class="top-bar">
+            <button class="mobile-menu">
+                <i class="fas fa-bars"></i>
+            </button>
+            <div class="search-bar">
+                <i class="fas fa-search"></i>
+                <input type="text" placeholder="Search for recipes...">
+            </div>
+            <div class="notifications">
+                <i class="far fa-bell"></i>
+                <div class="notifications-count">0</div>
+            </div>
+        </div>
+
+        <h1 class="section-title">Dashboard</h1>
+
+        <!-- Stats Cards -->
+        <div class="dashboard-cards">
+            <div class="card stats-card">
+                <div class="stat-icon">
+                    <i class="fas fa-calendar-check"></i>
+                </div>
+                <div class="stat-info">
+                    <h3 id="planned-meals-count">0</h3>
+                    <p>Planned Meals This Week</p>
+                </div>
+            </div>
+            <div class="card stats-card">
+                <div class="stat-icon">
+                    <i class="fas fa-utensils"></i>
+                </div>
+                <div class="stat-info">
+                    <h3 id="saved-recipes-count">0</h3>
+                    <p>Saved Recipes</p>
+                </div>
+            </div>
+            <div class="card stats-card">
+                <div class="stat-icon">
+                    <i class="fas fa-shopping-basket"></i>
+                </div>
+                <div class="stat-info">
+                    <h3 id="shopping-items-count">0</h3>
+                    <p>Items on Shopping List</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Meal Plans Section -->
+        <div class="meal-plans">
+            <div class="section-title">
+                <span>Recent Meal Plans</span>
+                <button class="btn btn-small btn-primary" id="add-meal-plan-btn">Add New Plan</button>
+            </div>
+            <div class="meal-plan-list" id="meal-plan-list">
+                <div class="empty-state">
+                    <i class="fas fa-calendar-plus"></i>
+                    <p>You don't have any meal plans yet.</p>
+                    <button class="btn btn-primary" id="create-first-plan-btn">Create Your First Plan</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Calendar & Activity Section -->
+        <div class="dashboard-cards">
+            <div class="calendar-section">
+                <div class="calendar">
+                    <div class="calendar-header">
+                        <div class="calendar-title" id="calendar-month">April 2025</div>
+                        <div class="calendar-nav">
+                            <button id="prev-month"><i class="fas fa-chevron-left"></i></button>
+                            <button id="next-month"><i class="fas fa-chevron-right"></i></button>
+                        </div>
+                    </div>
+                    <div class="calendar-days">
+                        <div>Sun</div>
+                        <div>Mon</div>
+                        <div>Tue</div>
+                        <div>Wed</div>
+                        <div>Thu</div>
+                        <div>Fri</div>
+                        <div>Sat</div>
+                    </div>
+                    <div class="calendar-grid" id="calendar-grid">
+                        <!-- Calendar days will be generated by JavaScript -->
+                    </div>
+                </div>
+            </div>
+            <div class="recent-activity">
+                <div class="section-title">
+                    <span>Recent Activity</span>
+                </div>
+                <div id="activity-container">
+                    <div class="empty-state">
+                        <i class="fas fa-history"></i>
+                        <p>No recent activity to show.</p>
+                        <p>Your activities will appear here as you use the system.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Shopping List Section -->
+        <div class="shopping-list-section">
+            <div class="section-title">
+                <span>Grocery List</span>
+                <button class="btn btn-small btn-outline" id="add-item-btn">Add Item</button>
+            </div>
+            <div class="shopping-list">
+                <div class="shopping-list-header">
+                    <div class="shopping-list-title">Current List</div>
+                    <div>
+                        <button class="btn btn-small" id="clear-completed-btn">Clear Completed</button>
+                    </div>
+                </div>
+                <!-- Shopping list items go here -->
+            </div>
+        </div>
+    </div>
+
+    <!-- Create Meal Modal -->
+    <div id="create-meal-modal" class="modal-overlay" style="display:none;">
+        <div class="modal">
+            <div class="modal-header">
+                <h2>Create Meal Plan</h2>
+                <button class="modal-close" onclick="closeMealModal()">✖️</button>
+            </div>
+            <div class="modal-body">
+                <form id="meal-form">
+                    <div class="form-group">
+                        <label>Meal Name</label>
+                        <input type="text" id="meal-name" class="form-control" placeholder="e.g., Grilled Chicken Salad" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Ingredients</label>
+                        <textarea id="meal-ingredients" class="form-control" placeholder="e.g., Chicken, Lettuce, Tomatoes" required></textarea>
+                    </div>
+                    <div class="form-group">
+                        <label>Instructions</label>
+                        <textarea id="meal-instructions" class="form-control" placeholder="e.g., Grill chicken, chop veggies..." required></textarea>
+                    </div>
+                    <div class="form-group">
+                        <label for="meal-date">Date:</label>
+                        <input type="date" id="meal-date" required>
+                      </div>
+                    <button type="submit" class="btn btn-primary" style="margin-top: 10px;">Save Meal</button>
+                </form>
+            </div>
+        </div>
+    </div>
+  <script>
+// =====================================
+// AUTH VARIABLES
+// =====================================
+let currentUser = localStorage.getItem('currentUser');
+if (!currentUser) {
+    alert("No user logged in. Redirecting to Login...");
+    window.location.href = "login.html"; // Redirect to login page if no user is logged in
+} else {
+    // Display username in the sidebar
+    document.getElementById('user-name').textContent = currentUser;
+    
+    // Set user initials in avatar
+    const initials = currentUser.split(' ')
+        .map(name => name.charAt(0).toUpperCase())
+        .join('').substring(0, 2);
+    document.getElementById('user-avatar').textContent = initials;
+}
+
+// =====================================
+// DASHBOARD VARIABLES
+// =====================================
+let meals = [];
+let shoppingItems = [];
+let activities = [];
+let savedRecipes = [];
+let currentDate = new Date();
+
+const mealPlanList = document.getElementById('meal-plan-list');
+const mealForm = document.getElementById('meal-form');
+const createMealModal = document.getElementById('create-meal-modal');
+const activityContainer = document.getElementById('activity-container');
+const shoppingList = document.querySelector('.shopping-list');
+const addItemBtn = document.getElementById('add-item-btn');
+const clearCompletedBtn = document.getElementById('clear-completed-btn');
+const logoutBtn = document.getElementById('logout-btn');
+const searchInput = document.querySelector('.search-bar input');
+
+// =====================================
+// LOGOUT FUNCTION
+// =====================================
+logoutBtn.addEventListener('click', () => {
+    localStorage.removeItem('currentUser'); // Clear the session
+    alert("Logged out successfully! Redirecting to homepage...");
+    window.location.href = "home.html"; // Redirect to the homepage
+});
+
+// =====================================
+// MODAL Functions
+// =====================================
+document.getElementById('add-meal-plan-btn')?.addEventListener('click', () => {
+    openMealModal();
+});
+
+document.getElementById('create-first-plan-btn')?.addEventListener('click', () => {
+    openMealModal();
+});
+
+function closeMealModal() {
+    createMealModal.style.display = 'none';
+}
+
+function openMealModal() {
+    // Set default date to today
+    const today = new Date();
+    const dateField = document.getElementById('meal-date');
+    if (dateField) {
+        // Format date as YYYY-MM-DD for the date input
+        const year = today.getFullYear();
+        const month = String(today.getMonth() + 1).padStart(2, '0');
+        const day = String(today.getDate()).padStart(2, '0');
+        dateField.value = `${year}-${month}-${day}`;
+    }
+    
+    createMealModal.style.display = 'flex';
+}
+
+// =====================================
+// VIEW RECIPE MODAL
+// =====================================
+function createViewRecipeModal() {
+    // Create modal elements if they don't exist
+    if (!document.getElementById('view-recipe-modal')) {
+        const modalHTML = `
+        <div id="view-recipe-modal" class="modal-overlay" style="display:none;">
+            <div class="modal">
+                <div class="modal-header">
+                    <h2 id="recipe-title">Recipe Details</h2>
+                    <button class="modal-close" onclick="closeViewRecipeModal()">✖️</button>
+                </div>
+                <div class="modal-body">
+                    <div class="recipe-details">
+                        <h3>Ingredients</h3>
+                        <div id="recipe-ingredients" class="recipe-ingredients"></div>
+                        
+                        <h3 style="margin-top: 20px;">Instructions</h3>
+                        <div id="recipe-instructions" class="recipe-instructions"></div>
+                    </div>
+                </div>
+            </div>
+        </div>`;
+        
+        document.body.insertAdjacentHTML('beforeend', modalHTML);
+    }
+}
+
+function viewRecipe(id) {
+    createViewRecipeModal();
+    
+    const meal = meals.find(meal => meal.id == id);
+    if (meal) {
+        document.getElementById('recipe-title').textContent = meal.name;
+        
+        // Format ingredients as a list
+        const ingredients = meal.ingredients.split(',').map(ingredient => 
+            `<div class="ingredient-item">• ${ingredient.trim()}</div>`
+        ).join('');
+        document.getElementById('recipe-ingredients').innerHTML = ingredients;
+        
+        // Format instructions as paragraphs
+        const instructions = meal.instructions.split('\n').map(instruction => 
+            `<p>${instruction.trim()}</p>`
+        ).join('');
+        document.getElementById('recipe-instructions').innerHTML = instructions;
+        
+        document.getElementById('view-recipe-modal').style.display = 'flex';
+        
+        // Log activity
+        addActivity(`👁️ Viewed recipe: <b>${meal.name}</b>`);
+    }
+}
+
+function closeViewRecipeModal() {
+    document.getElementById('view-recipe-modal').style.display = 'none';
+}
+
+// =====================================
+// MEAL PLAN Functions
+// =====================================
+mealForm.addEventListener('submit', (e) => {
+    e.preventDefault();
+
+    const name = document.getElementById('meal-name').value.trim();
+    const ingredients = document.getElementById('meal-ingredients').value.trim();
+    const instructions = document.getElementById('meal-instructions').value.trim();
+    const mealDate = document.getElementById('meal-date').value;
+
+    if (name === "" || ingredients === "" || instructions === "" || !mealDate) {
+        alert("Please fill all fields including the date!");
+        return;
+    }
+
+    const selectedDate = new Date(mealDate);
+    
+    const newMeal = {
+        id: Date.now(),
+        name,
+        ingredients,
+        instructions,
+        date: selectedDate.toLocaleDateString()
+    };
+
+    meals.push(newMeal);
+    updateMealCount();
+    saveData();
+    addActivity(`➕ Added new meal plan: <b>${name}</b> for ${selectedDate.toLocaleDateString()}`);
+    renderMeals();
+    mealForm.reset();
+    closeMealModal();
+});
+
+function renderMeals(filteredMeals = null) {
+    const mealsToRender = filteredMeals || meals;
+    
+    if (mealsToRender.length === 0) {
+        mealPlanList.innerHTML = `<div class="empty-state">
+            <i class="fas fa-calendar-plus"></i>
+            <p>No meal plans yet.</p>
+            <button class="btn btn-primary" id="create-first-plan-btn">Create Your First Plan</button>
+        </div>`;
+        
+        const createFirstPlanBtn = document.getElementById('create-first-plan-btn');
+        if (createFirstPlanBtn) {
+            createFirstPlanBtn.addEventListener('click', openMealModal);
+        }
+        return;
+    }
+
+    mealPlanList.innerHTML = mealsToRender.map(meal => `
+      <div class="meal-plan-card">
+        <div class="meal-plan-image" style="background-image: url('https://images.unsplash.com/photo-1512058564366-c9ec5d6adf02?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=MnwzNjUyOXwwfDF8c2VhcmNofDJ8fGZvb2R8ZW58MHx8fHwxNjcwOTM2OTM0&ixlib=rb-4.0.3&q=80&w=400');"></div>
+        <div class="meal-plan-details">
+          <div class="meal-plan-title">${meal.name}</div>
+          <div class="meal-plan-date">Planned for: ${meal.date}</div>
+          <div class="meal-plan-stats">
+            <div class="meal-plan-stat"><i class="fas fa-leaf"></i> ${meal.ingredients.split(',').length} Ingredients</div>
+          </div>
+          <div style="margin-top:15px; display:flex; gap:10px;">
+            <button onclick="viewRecipe(${meal.id})" class="btn btn-small btn-primary">View Recipe</button>
+            <button onclick="deleteMeal(${meal.id})" class="btn btn-small btn-danger">Delete</button>
+          </div>
+        </div>
+      </div>
+    `).join('');
+}
+
+function deleteMeal(id) {
+    meals = meals.filter(meal => meal.id !== id);
+    updateMealCount();
+    saveData();
+    addActivity(`❌ Deleted a Meal Plan`);
+    renderMeals();
+    renderCalendar(); // Re-render calendar to update meal indicators
+}
+
+// =====================================
+// SHOPPING LIST Functions
+// =====================================
+addItemBtn.addEventListener('click', () => {
+    const item = prompt('Enter Shopping Item:');
+    if (item) {
+        shoppingItems.push({ id: Date.now(), name: item, completed: false });
+        saveData();
+        addActivity(`🛒 Added shopping item: <b>${item}</b>`);
+        renderShoppingList();
+        updateShoppingCount();
+    }
+});
+
+clearCompletedBtn.addEventListener('click', () => {
+    shoppingItems = shoppingItems.filter(item => !item.completed);
+    saveData();
+    addActivity(`🧹 Cleared completed shopping items`);
+    renderShoppingList();
+    updateShoppingCount();
+});
+
+function renderShoppingList() {
+    const shoppingListContainer = document.querySelector('.shopping-list');
+    
+    if (!shoppingItems.length) {
+        shoppingListContainer.innerHTML = `
+            <div class="shopping-list-header">
+                <div class="shopping-list-title">Current List</div>
+                <div>
+                    <button class="btn btn-small" id="clear-completed-btn">Clear Completed</button>
+                </div>
+            </div>
+            <div class="empty-state">
+                <i class="fas fa-shopping-basket"></i>
+                <p>Your shopping list is empty.</p>
+                <button class="btn btn-primary" id="add-first-item-btn">Add First Item</button>
+            </div>
+        `;
+        
+        document.getElementById('add-first-item-btn')?.addEventListener('click', () => {
+            addItemBtn.click();
+        });
+        return;
+    }
+    
+    const shoppingItemsHTML = shoppingItems.map(item => `
+      <div class="shopping-item ${item.completed ? 'checked' : ''}" onclick="toggleItem(${item.id})">
+        <span class="shopping-item-checkbox"></span>
+        <span class="shopping-item-text">${item.name}</span>
+        <span class="shopping-item-category ${getRandomCategory()}"></span>
+      </div>
+    `).join('');
+    
+    shoppingListContainer.innerHTML = `
+        <div class="shopping-list-header">
+            <div class="shopping-list-title">Current List</div>
+            <div>
+                <button class="btn btn-small" id="clear-completed-btn">Clear Completed</button>
+            </div>
+        </div>
+        <div class="shopping-items">
+            ${shoppingItemsHTML}
+        </div>
+    `;
+    
+    // Reattach event listener to the new button
+    document.getElementById('clear-completed-btn').addEventListener('click', () => {
+        shoppingItems = shoppingItems.filter(item => !item.completed);
+        saveData();
+        addActivity(`🧹 Cleared completed shopping items`);
+        renderShoppingList();
+        updateShoppingCount();
+    });
+}
+
+function updateShoppingCount() {
+    document.getElementById('shopping-items-count').textContent = shoppingItems.length;
+}
+
+function getRandomCategory() {
+    const categories = ['produce', 'dairy', 'meat', 'pantry'];
+    return categories[Math.floor(Math.random() * categories.length)];
+}
+
+function toggleItem(id) {
+    shoppingItems = shoppingItems.map(item => 
+      item.id === id ? { ...item, completed: !item.completed } : item
+    );
+    saveData();
+    renderShoppingList();
+}
+
+// =====================================
+// CALENDAR Functions
+// =====================================
+function renderCalendar() {
+    const monthNames = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
+    
+    // Display current month and year
+    document.getElementById('calendar-month').textContent = `${monthNames[currentDate.getMonth()]} ${currentDate.getFullYear()}`;
+    
+    // Get first day of the month
+    const firstDay = new Date(currentDate.getFullYear(), currentDate.getMonth(), 1);
+    const daysInMonth = new Date(currentDate.getFullYear(), currentDate.getMonth() + 1, 0).getDate();
+    
+    // Calculate days from previous month to display
+    const startingDay = firstDay.getDay(); // 0 = Sunday, 1 = Monday, etc.
+    
+    const calendarGrid = document.getElementById('calendar-grid');
+    calendarGrid.innerHTML = '';
+    
+    // Previous month filler days
+    for (let i = 0; i < startingDay; i++) {
+        const dayElement = document.createElement('div');
+        dayElement.className = 'calendar-day faded';
+        calendarGrid.appendChild(dayElement);
+    }
+    
+    // Current month days
+    for (let i = 1; i <= daysInMonth; i++) {
+        const dayElement = document.createElement('div');
+        dayElement.className = 'calendar-day';
+        dayElement.textContent = i;
+        
+        // Check if there are meals planned for this day
+        const dateToCheck = new Date(currentDate.getFullYear(), currentDate.getMonth(), i);
+        const dateString = dateToCheck.toLocaleDateString();
+        
+        const hasMeals = meals.some(meal => {
+            try {
+                const mealDate = new Date(meal.date);
+                return mealDate.toLocaleDateString() === dateString;
+            } catch (e) {
+                console.error("Error comparing dates:", e);
+                return false;
+            }
+        });
+        
+        if (hasMeals) {
+            dayElement.className += ' has-meal';
+        }
+        
+        // Check if it's today
+        const today = new Date();
+        if (i === today.getDate() && 
+            currentDate.getMonth() === today.getMonth() && 
+            currentDate.getFullYear() === today.getFullYear()) {
+            dayElement.className += ' active';
+        }
+        
+        // Add click event to show meals for that day
+        dayElement.addEventListener('click', () => {
+            showMealsForDay(new Date(currentDate.getFullYear(), currentDate.getMonth(), i));
+        });
+        
+        calendarGrid.appendChild(dayElement);
+    }
+}
+
+function showMealsForDay(date) {
+    const dateString = date.toLocaleDateString();
+    const dayMeals = meals.filter(meal => {
+        try {
+            const mealDate = new Date(meal.date);
+            return mealDate.toLocaleDateString() === dateString;
+        } catch (e) {
+            console.error("Error comparing dates:", e);
+            return false;
+        }
+    });
+    
+    if (dayMeals.length > 0) {
+        alert(`Meals for ${dateString}:\n\n${dayMeals.map(m => m.name).join('\n')}`);
+    } else {
+        // Open modal with the selected date
+        openMealModalWithDate(date);
+    }
+}
+
+function openMealModalWithDate(date) {
+    // Format date as YYYY-MM-DD for the date input
+    const year = date.getFullYear();
+    const month = String(date.getMonth() + 1).padStart(2, '0');
+    const day = String(date.getDate()).padStart(2, '0');
+    
+    // Open the modal
+    createMealModal.style.display = 'flex';
+    
+    // Set the date field
+    const dateField = document.getElementById('meal-date');
+    if (dateField) {
+        dateField.value = `${year}-${month}-${day}`;
+    }
+    
+    // Show a message
+    alert(`No meals planned for ${date.toLocaleDateString()}. You can now create a meal for this date.`);
+}
+
+// Previous and Next month navigation
+document.getElementById('prev-month')?.addEventListener('click', () => {
+    currentDate.setMonth(currentDate.getMonth() - 1);
+    renderCalendar();
+});
+
+document.getElementById('next-month')?.addEventListener('click', () => {
+    currentDate.setMonth(currentDate.getMonth() + 1);
+    renderCalendar();
+});
+
+// =====================================
+// ACTIVITY LOG
+// =====================================
+function addActivity(message) {
+    const activity = {
+        message,
+        time: new Date().toLocaleTimeString(),
+        date: new Date().toLocaleDateString()
+    };
+    
+    activities.unshift(activity); // Add to beginning of array
+    
+    // Limit to 10 activities
+    if (activities.length > 10) {
+        activities.pop();
+    }
+    
+    renderActivities();
+    saveData();
+}
+
+function renderActivities() {
+    if (activities.length === 0) {
+        activityContainer.innerHTML = `
+            <div class="empty-state">
+                <i class="fas fa-history"></i>
+                <p>No recent activity to show.</p>
+                <p>Your activities will appear here as you use the system.</p>
+            </div>
+        `;
+        return;
+    }
+    
+    activityContainer.innerHTML = `
+        <ul class="activity-list">
+            ${activities.map((activity, index) => `
+                <li class="activity-item">
+                    <div class="activity-icon ${getActivityIconColor(index)}">
+                        <i class="${getActivityIcon(activity.message)}"></i>
+                    </div>
+                    <div class="activity-content">
+                        <div class="activity-text">${activity.message}</div>
+                        <div class="activity-time">${activity.time} on ${activity.date}</div>
+                    </div>
+                </li>
+            `).join('')}
+        </ul>
+    `;
+}
+
+function getActivityIcon(message) {
+    if (message.includes('Added new meal')) return 'fas fa-utensils';
+    if (message.includes('Deleted')) return 'fas fa-trash-alt';
+    if (message.includes('shopping')) return 'fas fa-shopping-basket';
+    if (message.includes('Viewed')) return 'fas fa-eye';
+    return 'fas fa-bolt';
+}
+
+function getActivityIconColor(index) {
+    const colors = ['green', 'orange', 'blue'];
+    return colors[index % colors.length];
+}
+
+
+
+// =====================================
+// STATS UPDATE Functions
+// =====================================
+function updateMealCount() {
+    const today = new Date();
+    
+    // Get start of week (Sunday)
+    const startOfWeek = new Date(today);
+    startOfWeek.setDate(today.getDate() - today.getDay());
+    startOfWeek.setHours(0, 0, 0, 0);
+    
+    // Get end of week (Saturday)
+    const endOfWeek = new Date(startOfWeek);
+    endOfWeek.setDate(startOfWeek.getDate() + 6);
+    endOfWeek.setHours(23, 59, 59, 999);
+    
+    const mealsThisWeek = meals.filter(meal => {
+        try {
+            const mealDate = new Date(meal.date);
+            return mealDate >= startOfWeek && mealDate <= endOfWeek;
+        } catch (e) {
+            console.error("Error comparing dates:", e);
+            return false;
+        }
+    });
+    
+    if (document.getElementById('planned-meals-count')) {
+        document.getElementById('planned-meals-count').textContent = mealsThisWeek.length;
+    }
+    
+    if (document.getElementById('saved-recipes-count')) {
+        document.getElementById('saved-recipes-count').textContent = meals.length;
+    }
+}
+
+// =====================================
+// LOCAL STORAGE SAVE/LOAD (Per Account)
+// =====================================
+function saveData() {
+    localStorage.setItem(`meals_${currentUser}`, JSON.stringify(meals));
+    localStorage.setItem(`shopping_${currentUser}`, JSON.stringify(shoppingItems));
+    localStorage.setItem(`activities_${currentUser}`, JSON.stringify(activities));
+}
+
+function loadData() {
+    const mealsData = localStorage.getItem(`meals_${currentUser}`);
+    const shoppingData = localStorage.getItem(`shopping_${currentUser}`);
+    const activitiesData = localStorage.getItem(`activities_${currentUser}`);
+
+    if (mealsData) meals = JSON.parse(mealsData);
+    if (shoppingData) shoppingItems = JSON.parse(shoppingData);
+    if (activitiesData) activities = JSON.parse(activitiesData);
+
+    renderMeals();
+    renderShoppingList();
+    renderActivities();
+    renderCalendar();
+    updateMealCount();
+    updateShoppingCount();
+}
+
+// Load user-specific data when page loads
+window.onload = () => {
+    loadData();
+};
+
+  </script>
+ 
+
+    
+  
