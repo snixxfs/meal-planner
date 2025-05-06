@@ -1071,7 +1071,12 @@
 // =====================================
 // AUTH VARIABLES
 // =====================================
-let currentUser = localStorage.getItem('currentUser');
+let currentUser = JSON.parse(sessionStorage.getItem('currentUser'));
+if (!currentUser) {
+    alert("No user logged in. Redirecting to Login...");
+    window.location.href = "login.html";
+}
+
 if (!currentUser) {
     alert("No user logged in. Redirecting to Login...");
     window.location.href = "login.html"; // Redirect to login page if no user is logged in
@@ -1206,18 +1211,32 @@ function closeViewRecipeModal() {
 // =====================================
 // MEAL PLAN Functions
 // =====================================
-mealForm.addEventListener('submit', (e) => {
-    e.preventDefault();
+mealForm.addEventListener('submit', async (e) => {
+  e.preventDefault();
 
-    const name = document.getElementById('meal-name').value.trim();
-    const ingredients = document.getElementById('meal-ingredients').value.trim();
-    const instructions = document.getElementById('meal-instructions').value.trim();
-    const mealDate = document.getElementById('meal-date').value;
+  const name = document.getElementById('meal-name').value.trim();
+  const ingredients = document.getElementById('meal-ingredients').value.trim();
+  const instructions = document.getElementById('meal-instructions').value.trim();
+  const mealDate = document.getElementById('meal-date').value;
 
-    if (name === "" || ingredients === "" || instructions === "" || !mealDate) {
-        alert("Please fill all fields including the date!");
-        return;
-    }
+  if (!name || !ingredients || !instructions || !mealDate) {
+    alert("Please fill all fields including the date!");
+    return;
+  }
+
+  const newMeal = {
+    name,
+    ingredients,
+    instructions,
+    meal_date: mealDate
+  };
+
+  await saveMealToDB(newMeal);
+  addActivity(`➕ Added new meal plan: <b>${name}</b> for ${mealDate}`);
+  await loadMealsFromDB();
+  mealForm.reset();
+  closeMealModal();
+});
 
     const selectedDate = new Date(mealDate);
     
@@ -1236,7 +1255,7 @@ mealForm.addEventListener('submit', (e) => {
     renderMeals();
     mealForm.reset();
     closeMealModal();
-});
+;
 
 function renderMeals(filteredMeals = null) {
     const mealsToRender = filteredMeals || meals;
@@ -1273,36 +1292,37 @@ function renderMeals(filteredMeals = null) {
     `).join('');
 }
 
-function deleteMeal(id) {
-    meals = meals.filter(meal => meal.id !== id);
-    updateMealCount();
-    saveData();
-    addActivity(`❌ Deleted a Meal Plan`);
-    renderMeals();
-    renderCalendar(); // Re-render calendar to update meal indicators
+async function deleteMeal(id) {
+  await fetch("delete_meal.php", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ meal_id: id })
+  });
+  addActivity(`❌ Deleted a Meal Plan`);
+  await loadMealsFromDB();
 }
+
 
 // =====================================
 // SHOPPING LIST Functions
 // =====================================
-addItemBtn.addEventListener('click', () => {
-    const item = prompt('Enter Shopping Item:');
-    if (item) {
-        shoppingItems.push({ id: Date.now(), name: item, completed: false });
-        saveData();
-        addActivity(`🛒 Added shopping item: <b>${item}</b>`);
-        renderShoppingList();
-        updateShoppingCount();
-    }
+addItemBtn.addEventListener('click', async () => {
+  const item = prompt('Enter Shopping Item:');
+  if (item) {
+    await saveShoppingItem(item);
+    addActivity(`🛒 Added shopping item: <b>${item}</b>`);
+    await loadShoppingItems();
+    updateShoppingCount();
+  }
 });
 
-clearCompletedBtn.addEventListener('click', () => {
-    shoppingItems = shoppingItems.filter(item => !item.completed);
-    saveData();
-    addActivity(`🧹 Cleared completed shopping items`);
-    renderShoppingList();
-    updateShoppingCount();
+
+clearCompletedBtn.addEventListener('click', async () => {
+  await clearCompletedItems();
+  addActivity(`🧹 Cleared completed shopping items`);
+  updateShoppingCount();
 });
+
 
 function renderShoppingList() {
     const shoppingListContainer = document.querySelector('.shopping-list');
@@ -1595,11 +1615,70 @@ function updateMealCount() {
 // =====================================
 // LOCAL STORAGE SAVE/LOAD (Per Account)
 // =====================================
-function saveData() {
-    localStorage.setItem(`meals_${currentUser}`, JSON.stringify(meals));
-    localStorage.setItem(`shopping_${currentUser}`, JSON.stringify(shoppingItems));
-    localStorage.setItem(`activities_${currentUser}`, JSON.stringify(activities));
+async function saveMealToDB(meal) {
+  try {
+    await fetch("save_meal.php", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ ...meal, user_id: currentUser.id })
+    });
+  } catch (err) {
+    console.error("Failed to save meal:", err);
+  }
 }
+
+async function loadMealsFromDB() {
+  try {
+    const res = await fetch(`get_meals.php?user_id=${currentUser.id}`);
+    meals = await res.json();
+    renderMeals();
+    renderCalendar();
+    updateMealCount();
+  } catch (err) {
+    console.error("Failed to load meals:", err);
+  }
+}
+async function loadShoppingItems() {
+  const res = await fetch(`get_shopping_items.php?user_id=${currentUser.id}`);
+  shoppingItems = await res.json();
+  renderShoppingList();
+  updateShoppingCount();
+}
+
+async function saveShoppingItem(itemName) {
+  await fetch("save_shopping_item.php", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({
+      user_id: currentUser.id,
+      item_name: itemName
+    })
+  });
+}
+
+async function toggleItem(id) {
+  const item = shoppingItems.find(i => i.id === id);
+  const completed = item.completed ? 0 : 1;
+
+  await fetch("update_shopping_item.php", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ id, completed })
+  });
+
+  await loadShoppingItems();
+}
+
+async function clearCompletedItems() {
+  await fetch("delete_completed_items.php", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ user_id: currentUser.id })
+  });
+
+  await loadShoppingItems();
+}
+
 
 function loadData() {
     const mealsData = localStorage.getItem(`meals_${currentUser}`);
@@ -1618,10 +1697,11 @@ function loadData() {
     updateShoppingCount();
 }
 
-// Load user-specific data when page loads
 window.onload = () => {
-    loadData();
+  loadMealsFromDB();
+  loadShoppingItems();
 };
+
 
   </script>
  
